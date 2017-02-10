@@ -1,3 +1,5 @@
+#Jogo feito por Astrogilda Caroline e Giovanna Nogueira
+
 require 'gosu'
 require_relative 'ariel'
 require_relative 'estrela'
