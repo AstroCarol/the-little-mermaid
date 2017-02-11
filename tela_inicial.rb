@@ -1,4 +1,4 @@
-#Jogo feito por Astrogilda Caroline e Giovanna Nogueira
+#Jogo por Astrogilda Caroline e Giovanna Nogueira
 
 require 'gosu'
 require_relative 'ariel'
@@ -11,8 +11,8 @@ require_relative 'pedra'
 	class TelaInicial < Gosu::Window
 		ESTRELA = 0.01
 		URSULA = 0.01
-		CONCHA = 0.02
-		PEDRA = 0.01
+		CONCHA = 0.002
+		PEDRA = 0.001
 
 		def initialize
 			super 640, 480
@@ -27,6 +27,9 @@ require_relative 'pedra'
 			@map_image2 = Gosu::Image.new("image/mar_3.png")
 			@ariel = Ariel.new
 			@background_image2 = Gosu::Image.new("image/finaltela.png")
+			@tutorial = Gosu::Image.new("image/fase_2.png")
+			@segunda_fase = Gosu::Image.new("image/segunda_fase.png")
+			@v = Gosu::Image.new("image/venceu_2.png")
 			@estrela = []
 			@font = Gosu::Font.new(25)
 			@placar = 0
@@ -47,15 +50,30 @@ require_relative 'pedra'
 				update_final
 			elsif @flor == "fase" then
 				update_fase
+			elsif @flor == "tutorial" then
+				update_tutorial
+			elsif @flor == "segunda" then
+				update_segunda
+			elsif @flor == "vencer" then
+				update_vencer 
 			end
 		end
 
+		#Update de tela inicial
 		def update_inicio
 			if Gosu::button_down? Gosu::KbReturn or Gosu::button_down? Gosu::KbEnter then
+				@flor = "tutorial"
+			end
+		end
+
+		#Update do tutorial
+		def update_tutorial
+			if Gosu::button_down? Gosu::KbSpace then
 				@flor = "jogar"
 			end
 		end
 
+		#Update de inicio do jogo
 		def update_jogar
 			if Gosu::button_down? Gosu::KbEscape then
 				close
@@ -101,24 +119,32 @@ require_relative 'pedra'
 			end
 			dif = @tempo.to_i/30
 			@tempo += 1.0/60.0
-			if (@placar < 300 && @tempo >= 60.0) then
+			if (@placar < 250 && @tempo >= 60.0) then
 				@flor = "final"
 			end
-			if (@tempo > 70.0) then
-				@flor = "fase"
+			if (@tempo > 60.1) then
+				@flor = "segunda"
 			end
 			if (@placar < 0) then
 				@flor = "final"
 			end
 		end
 
+		#Update tela inical fase 2
+		def update_segunda
+			if Gosu::button_down? Gosu::KbSpace then
+				@flor = "fase"
+			end
+		end
+
+		#Update de fim de jogo
 		def update_final
 			if Gosu::button_down? Gosu::KbReturn then
 				initialize
 			end
 		end
 
-		#Início da Segunda Fase 'Update'
+		#Upadate da segunda fase do jogo
 		def update_fase
 			if Gosu::button_down? Gosu::KbEscape then
 				close
@@ -160,18 +186,24 @@ require_relative 'pedra'
 			@ursula.dup.each do |ursula|
 				@poderzinho.dup.each do |poderzinho|
 					distance = Gosu::distance(ursula.x,ursula.y,poderzinho.x,poderzinho.y)
-					if distance < 20 then 
+					if distance < 10 then 
 						@ursula.delete ursula
 						@poderzinho.delete poderzinho
-						@placar += 10
+						@placar += 20
 					end
 				end
 			end
-			#if (@placar < 700 ) then
-				#@flor = "final"
-			#end
+			if (@placar >= 700) then
+				@flor = "vencer"
+			end
 		end
-		#Fim da Segunda Fase 'Update'
+
+		#Update tela de vitória
+		def update_vencer
+			if Gosu::button_down? Gosu::KbEscape then
+				close
+			end
+		end
 
 		def draw
 			if @flor == "inicio" then
@@ -180,15 +212,28 @@ require_relative 'pedra'
 				draw_jogar()
 			elsif @flor == "final" then
 				draw_final()
-			elsif @flor == "fase"
+			elsif @flor == "fase" then
 				draw_fase()
+			elsif @flor == "tutorial" then
+				draw_tutorial()
+			elsif @flor == "segunda" then
+				draw_segunda()
+			elsif @flor == "vencer" then
+				draw_vencer()
 			end
 		end
 
+		#Draw da tela inicial
 		def draw_inicio
 			@background_image.draw(0,0,0)
 		end
 
+		#Draw do tutorial
+		def draw_tutorial
+			@tutorial.draw(0,0,0)
+		end
+
+		#Draw do jogo
 		def draw_jogar
 			@map_image.draw(0,0,0)
 			@ariel.draw
@@ -205,13 +250,19 @@ require_relative 'pedra'
 			@font.draw("Tempo: #{@tempo}",520,10,1,1,1,0xffff00ff)
 		end
 
+		#Draw da tela inicial da fase 2
+		def draw_segunda
+			@segunda_fase.draw(0,0,0)
+		end
+
+		#Draw do fim do jogo
 		def draw_final
 			@background_image2.draw(0,0,0)
 			@font.draw("#{@placar}",300,210,1,1,1,0xffff00ff)
 			@font.draw("#{@tempo.round(1)}",300,270,1,1,1,0xffff00ff)
 		end
 
-		#Início da Segunda Fase 'Draw'
+		#Draw da segunda fase do jogo
 		def draw_fase
 			@map_image2.draw(0,0,0)
 			@ariel.draw
@@ -222,9 +273,13 @@ require_relative 'pedra'
 				poderzinho.draw
 			end
 			@font.draw("Placar: #{@placar}",520,30,1,1,1,0xffff00ff)
-			@font.draw("Tempo: #{@tempo - 70}",520,10,1,1,1,0xffff00ff)
+			@font.draw("Tempo: #{@tempo - 60}",520,10,1,1,1,0xffff00ff)
 		end
-		#Fim da Segunda Fase 'Draw'
+
+		#Draw da tela de vitória
+		def draw_vencer
+			@v.draw(0,0,0)
+		end
 	end
 
 window = TelaInicial.new
